@@ -1,0 +1,13 @@
+//////// Features We Implemented ////////
+1. Hint mode
+2. Square Reversi model
+3. Square Reversi view
+4. Square Reversi controller
+5. Square Reversi strategies
+
+//////// Which Files Were Affected ////////
+• Added new SquareBoard, SquarePosition, SquareReversiModel
+• Added new SquareReversiView, SquareReversiFrameView, SquareReversiPanelView
+• Added PanelDecorator, HintDecorator
+• Controller updated
+• All strategy classes updated

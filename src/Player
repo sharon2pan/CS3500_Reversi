@@ -1,0 +1,23 @@
+1. make IPlayer interface
+    -> make PlayerImpl class that implements IPlayer
+        • public class PlayerImpl implements IPlayer
+
+    methods
+    • play(ReversiModel model) //allows the user to make a move based on the strategy they
+                                  decide to pursue
+    • pass(ReversiModel model) //allows the user to pass their turn
+    • getCell(); //the color assigned to the player
+
+2. make IStrategy interface --> for choosing where to play next for the given Player
+    --> make classes that implements IStrategy for diff strategies the Player can use
+        • public class PromptUser //asks the user where they want to play next
+        • public class PlayNextToFirstLegalOppositeColor //plays the first Cell that is
+                                                           a Cell of the opposite color
+             --> PlayCenter method //plays the center
+             ^ make it a smaller detail that's part of a bigger class somehow
+        --> differentiate between Human Player and AI
+            (make some methods only the Human Player can access vs AI)
+
+    methods
+    • choosePos(ReversiModel model, Cell player);
+

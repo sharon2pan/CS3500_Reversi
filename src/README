@@ -1,0 +1,230 @@
+//////////////// Reversi - Part 1 ////////////////
+
+OVERVIEW
+This code creates a game of Reversi on a hexagonal game board that is able to be played
+between a Human Player and an AI, with working keyboard and mouse actions.
+
+QUICK START
+In order to start the game, play the main(String[] args) method in the Reversi class.
+
+ABOUT THE CODE
+In src directory,
+The separation between model, view, and controller packages ensures clear Model-View-controller separation.
+
+   Class Reversi
+      + used to play the game
+      + It sets up the game model, creates the view components (such as the game frame) and
+        controllers for all players (AI and Human), and orchestrates the overall game flow.
+      + Game must be started in the model in order to start playing.
+      + It also sets up the music to be played: Mariah Carey's All I Want For Christmas -It's time
+        version.
+   Interface ArgParser
+      + Contains that method needed to parse the command-line arguments given in the Reversi class
+   Class ArgParser
+      + Used to parse the arguments that are given in the static main method in reversi
+      + It identifies the two players in the game, and identifies the strategies for the AI player
+        or AI players.
+   Class ReversiCreator
+      + Creates the player (Human or AI) based on the command line arguments parsed in ArgParser
+       class
+
+   Package controller
+      • Interface IPlayer
+        -> Class AIPlayer
+          + represents an AI player
+          + takes in the color that it is playing and the strategy that it uses while making
+              moves during the game
+        -> Class HumanPlayer
+          + represents a Human player
+          + takes in the color that it is playing, as well as a model and view in order to
+            mutate the model and update the view after a move is made
+      • Interface Features
+          + includes methods with all the high-level events that need to be listened for and
+            responded to for the player's actions
+      • Interface ModelStatusListener
+          + updates the status of the model when it gets the notification to do so
+        -> Abstract Class BasicController (implements both ModelStatusListener and Features)
+          + responsible for managing the interaction between the model, view, and players in a
+            Reversi game
+          + is subscribed as a listener to both the MouseStatusListener and Features in order
+            to coordinate between the model and view
+        -> Class HumanController (extends BasicController)
+          + responsible for controlling the human players, utilizes a specific way to execute a move
+        -> Class AiController (extends BasicController)
+          + responsible for controlling the AI players, utilizes a specific way to execute a move
+
+   Package Model
+      • Enum Cell
+          + represents the state of each hexagon that makes up the board
+          + can either be BLACK, or WHITE
+          + Representation as an enum reduces the chances of invalid states
+      • Interface IPosition
+        -> Class Position
+          + the coordinate point of each hexagon
+          + takes in three coordinates (q, r, s)
+          + Used axial coordinates to determine neighboring cells and distances
+      • Interface IBoard
+         -> Class Board
+            + creates a double array of Optional<Cell>s that represents positions of Cells
+              and depends on the size of the board
+            + used by ReversiModel class to execute actions or answer questions
+              about the board
+            + The reason for having this interface is to enable flexibility for future
+              implementations of a board, such that it could be different shapes, etc.
+      • Interface ReadonlyReversiModel
+         -> Interface IReversiModel
+            -> Class ReversiModel
+                + takes in a size that determines how large the board is
+            -> Class MockReversi1
+                + takes in a StringBuilder and a size that determines how large the board is
+                + creates a transcript of the Positions that are visited when executing a move
+                  to ensure that all necessary Positions are checked
+            -> Class MockReversiAvoidCorners
+                + takes in a StringBuilder and a size that determines how large the board is
+                + lies about the validity of Cells neighboring corners
+                    - in other words, instead of labelling them as invalid, these Cells are
+                      the only moves that are valid on the entire board
+            -> Class MockReversiLieCaptures
+                + takes in a StringBuilder and a size that determines how large the board is
+                + sets the number of discs captured to 5 for Position(2,-1,-1)
+
+   Package Strategies
+      • Interface IReversiStrategy
+         -> Abstract Class BaseReversiStrategy
+            + Verifies the conditions for the best move (upper and left-most)
+            + Finds all the legal moves that the player can make with the current state of the game
+            -> Class MaximumCaptureStrategy
+                + Strategy in which the player will play in the Position that turns over the
+                  most discs
+            -> Class AvoidCornersStrategy
+                + Strategy in which the player will play in any Position that is not neighboring a
+                  corner so that they can avoid giving their opponenet the chance to play the
+                  corner
+            -> Class GoForCornersStrategy
+                + Strategy in which the player will play the corners
+            -> Class ScrewOverOtherPlayer
+                + Strategy in which the player will play in the Position that minimizes their
+                  opponent's maximum move
+         -> Class TryTwo
+            + chains two strategies together... aka if there is no Position that fulfills the first
+              strategy, then try the second strategy
+
+   Package View
+      • Interface IView
+         -> Class ReversiView
+            + takes in a model in order to create a visualization
+
+      • Interface IReversiFrameView
+        -> Class ReversiFrameView
+            + takes in a ReadonlyReversiModel so that it does not have access to the mutable
+          methods
+      • Interface IReversiPanelView
+        -> Class ReversiPanelView
+            + takes in a ReadonlyReversiModel so that it does not have access to the mutable
+          methods
+            + keeps track of the keyboard and mouse events
+            + draws the current state of the game on the board
+
+In test directory,
+   • includes tests for classes in each package
+
+CLASS INVARIANT
+    Size is positive
+      - in constructor of ReversiModel class, throws IllegalArgumentException if size is less
+        than or equal to 0
+    scoreWhite and scoreBlack are not negative
+      - in constructor of ReversiModel class, each score is set to 0
+      - in getScore method, throws IllegalStateException if score is less than 0
+      - only adds onto score, never subtracts
+    currentTurn is either Black or White
+      - in constructor of ReversiModel, currentTurn is set to Black
+      - in nextTurn method, throws IllegalStateException if not Black or White
+    passTurnCount is in between 0 and 2 inclusive
+      - in constructor of ReversiModel class, passTurnCount is set to 0
+      - in isGameOver method,
+
+LOCATING RELEVANT FUNCTIONALITY:
+    1.) Making a move:
+      executeMove(Position pos) in IReversiModel allows for moves to be executed for
+      game progression
+    2.) Determining Game Over:
+      isGameOver() method in IReversiModel informs if the game has concluded
+    3.) Calculating Score:
+      Can gather scores for particular cell (color) using getScore(Cell hex) in IReversiModel
+    4.) Managing Player Turns:
+      Players can pass their turn using the passTurn() method in IReversiModel
+
+//////////////// Reversi - Part 2 ////////////////
+
+CHANGES FOR PART 2 (from Part 1 code)
+• Added a ReadonlyReversiModel interface
+    - holds all of the non-mutable, observable methods
+    - useful for the View, which should not mutate any of the code in the model but might need
+      some information, such as the size of the model or the current state of the Board
+• Added new method
+    -> getSize()
+        + returns the radius size of the game board
+        + great for checking to see if anything mutates the size field (which shouldn't happen)
+• Made isALegalMove, hasLegalMove method public
+    - These are methods that the user would like to have access to since they will be
+      constantly asking if there are any moves they can make and if the move they currently
+      are making is legal. Therefore, it is good practice to make these visible to the user!
+
+GUIDE TO VIEW
+
+MOUSE ACTION LEGEND
+• When the player clicks on a Cell on the game board, the chosen Cell highlights blue
+• When the player then clicks the same Cell, the chosen Cell will unhighlight and return to red
+    OR when the player clicks another Cell, the NEW Cell will highlight blue and the OLD cell
+       will unhighlight to red
+    OR when the player clicks on a position outside of the game board, the OLD cell that was
+       highlighted blue will unhighlight to red
+
+KEYBOARD INPUT LEGEND
+• 'm' = executeMove();
+    - the current player makes a move and their respectively colored disc is placed on
+      the game board at their position of choice
+• 'p' = passMove();
+    - the current player skips their turn
+
+EXTRA CREDIT
+Can be found...
+    • Interface IReversiStrategy
+        -> Class TryTwo
+        -> Class AvoidNeighboringCornersStrategy
+        -> Class GoForCornersStrategy
+        -> Class MaximumCapture Strategy
+        -> Class MinimizeMaxMoveStrategy
+        -> Abstract Class BaseReversiStrategy
+    Optional Extra Credit (not sure if will be counted)
+    • Music
+    • Keeping track of the current turn in the Title of the JFrame
+    • Keeping track of each player's score in a JPanel at the bottom of the window
+
+//////////////// Reversi - Part 3 ////////////////
+
+CHANGES FOR PART 3 (from Part 2 code)
+• in ReversiModel,
+    -> added new methods notifyTurnChanged, notifyScoreChanged, notifyGameStateChanged
+        - notifies the ModelStatusListener about aspects that are changed after a turn is
+          executed, such as the current turn or score, in order to update components of
+          the view (ex. the panel that holds the score and the panel that tells the player whose
+          turn it currently is)
+    -> added new method addModelStatusListener
+        - subscribes the given ModelStatusListener to this ReversiModel so the model knows
+          who needs to be updated
+• in ReversiFrameView,
+    -> added a new method showTurnIndicator
+        - creates a new JOptionPane to display a message in this ReversiFrameView
+        - used to notify the player if the move they tried to make is invalid and when it is
+          their turn to play
+• in ReversiPanelView,
+    -> added a new method addFeatures
+        - subscribes the given Features to this ReversiPanelView so the view knows
+          who needs to be updated
+    -> updated the method setupKeyListener
+        - whenever a key is pressed, all of the Features subscribed know to perform the
+          appropriate action respective to that key
+• In general, tried to separate the model and view as much as we could by reducing the number
+  of times a model's method is called in ReversiPanelView or ReversiFrameView and moving it into
+  the controller
